@@ -1,0 +1,28 @@
+<%- include('../partials/header') %>
+
+<h1 class="page-title">Путешествия всех участников</h1>
+
+<% if (travels.length === 0) { %>
+  <div class="empty-state">
+    <p>Пока нет ни одной записи. Станьте первым, кто поделится путешествием!</p>
+    <a class="btn" href="/travels/new">Добавить путешествие</a>
+  </div>
+<% } else { %>
+  <div class="travel-grid">
+    <% travels.forEach(t => { %>
+      <a class="card travel-card" href="/travels/<%= t._id %>">
+        <% if (t.images && t.images.length) { %>
+          <img src="<%= t.images[0] %>" alt="<%= t.title %>">
+        <% } %>
+        <h3><%= t.title %></h3>
+        <div class="muted">Автор: <%= t.authorName %></div>
+        <div class="tag-row">
+          <span class="tag">📍 <%= t.location.name %></span>
+          <span class="tag">💰 <%= t.cost %> ₽</span>
+        </div>
+      </a>
+    <% }) %>
+  </div>
+<% } %>
+
+<%- include('../partials/footer') %>

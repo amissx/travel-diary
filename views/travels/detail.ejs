@@ -1,0 +1,45 @@
+<%- include('../partials/header') %>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<a class="back-link" href="/travels">&larr; Ко всем путешествиям</a>
+
+<div class="card">
+  <div class="detail-header">
+    <h1 class="page-title" style="margin:0;"><%= travel.title %></h1>
+  </div>
+  <div class="muted">Автор: <%= travel.authorName %> · <%= travel.createdAt.toLocaleDateString('ru-RU') %></div>
+
+  <% if (travel.images && travel.images.length) { %>
+    <div class="gallery">
+      <% travel.images.forEach(img => { %>
+        <img class="gallery-img" src="<%= img %>" alt="<%= travel.title %>" onclick="window.open(this.src, '_blank')">
+      <% }) %>
+    </div>
+  <% } %>
+
+  <p><%= travel.description %></p>
+
+  <div class="tag-row">
+    <span class="tag">📍 <%= travel.location.name %></span>
+    <span class="tag">💰 <%= travel.cost %> ₽</span>
+  </div>
+
+  <div id="detail-map"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const lat = <%= travel.location.lat %>;
+  const lng = <%= travel.location.lng %>;
+  const map = L.map('detail-map', { attributionControl: false }).setView([lat, lng], 9);
+  L.control.attribution({ prefix: 'Leaflet' }).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+  L.marker([lat, lng]).addTo(map).bindPopup(<%- JSON.stringify(travel.location.name) %>).openPopup();
+</script>
+
+<%- include('../partials/footer') %>

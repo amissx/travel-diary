@@ -1,0 +1,92 @@
+<%- include('../partials/header') %>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<h1 class="page-title">Новая запись о путешествии</h1>
+
+<% if (error) { %>
+  <div class="error-box"><%= error %></div>
+<% } %>
+
+<div class="card">
+  <form action="/travels" method="POST" enctype="multipart/form-data">
+    <div class="field">
+      <label for="title">Название путешествия</label>
+      <input type="text" id="title" name="title" required>
+    </div>
+
+    <div class="field">
+      <label for="description">Описание</label>
+      <textarea id="description" name="description" required></textarea>
+    </div>
+
+    <div class="field">
+      <label for="locationName">Местоположение (название)</label>
+      <input type="text" id="locationName" name="locationName" placeholder="Например: Лиссабон, Португалия" required>
+    </div>
+
+    <div class="field">
+      <label>Точка на карте (кликните по карте или нажмите «Определить моё местоположение»)</label>
+      <button type="button" class="btn" id="geo-btn">📍 Определить моё местоположение</button>
+      <div id="map"></div>
+      <p class="muted" id="coords-text">Координаты не выбраны</p>
+      <input type="hidden" id="lat" name="lat" required>
+      <input type="hidden" id="lng" name="lng" required>
+    </div>
+
+    <div class="field">
+      <label for="cost">Стоимость путешествия (₽)</label>
+      <input type="number" id="cost" name="cost" min="0" step="0.01" required>
+    </div>
+
+    <div class="field">
+      <label for="images">Изображения места (можно выбрать несколько, до 6)</label>
+      <input type="file" id="images" name="images" accept="image/*" multiple>
+    </div>
+
+    <button class="btn btn-coral" type="submit">Сохранить путешествие</button>
+  </form>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map', { attributionControl: false }).setView([50.85, 4.35], 5);
+  L.control.attribution({ prefix: 'Leaflet' }).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+
+  let marker = null;
+  const latInput = document.getElementById('lat');
+  const lngInput = document.getElementById('lng');
+  const coordsText = document.getElementById('coords-text');
+
+  function setPoint(lat, lng) {
+    latInput.value = lat;
+    lngInput.value = lng;
+    coordsText.textContent = 'Выбрано: ' + lat.toFixed(5) + ', ' + lng.toFixed(5);
+    if (marker) {
+      marker.setLatLng([lat, lng]);
+    } else {
+      marker = L.marker([lat, lng]).addTo(map);
+    }
+    map.setView([lat, lng], 8);
+  }
+
+  map.on('click', (e) => setPoint(e.latlng.lat, e.latlng.lng));
+
+  document.getElementById('geo-btn').addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      alert('Геолокация не поддерживается браузером');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setPoint(pos.coords.latitude, pos.coords.longitude),
+      () => alert('Не удалось определить местоположение. Выберите точку на карте вручную.')
+    );
+  });
+</script>
+
+<%- include('../partials/footer') %>
